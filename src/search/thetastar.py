@@ -5,14 +5,13 @@ from search import astar
 def line_of_sight(node, neighbour, finder, clearance):
     x0, y0 = node.x, node.y
     x1, y1 = neighbour.x, neighbour.y
-    dx = abs(x1-x0)
-    dy = abs(y1-y0)
+    dx, dy = abs(x1-x0), abs(y1-y0)
     err = dx - dy
-    sx = (x0 < x1) and 1 or -1
-    sy = (y0 < y1) and 1 or -1
+    sx = 1 if (x0 < x1) else -1
+    sy = 1 if (y0 < y1) else -1
 
     while True:
-        if not finder.grid.is_walkable(x0, y0, finder.walkable, finder.tunnel, clearance):
+        if not finder.grid.is_walkable(x0, y0, finder.walkable, clearance):
             return False
 
         if x0 == x1 and y0 == y1:
@@ -45,5 +44,5 @@ def compute_cost(node, neighbour, finder, clearance):
             neighbour.g = node.g + m_cost
 
 
-def search(finder, start_node, end_node, clearance, to_clear, override_heuristic):
+def search(finder, start_node, end_node, clearance, to_clear, override_heuristic=None):
     return astar.search(finder, start_node, end_node, clearance, to_clear, override_heuristic, compute_cost)

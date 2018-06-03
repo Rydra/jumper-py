@@ -14,13 +14,13 @@ def compute_cost(node, neighbour, *args):
         neighbour.g = node.g + m_cost
 
 
-def search(finder, start_node, end_node, clearance, to_clear, override_heuristic=None, override_cost_eval=None):
-    heuristic = override_heuristic or finder.heuristic
+def search(finder, start_node, end_node, clearance, to_clear, heuristic=None, cost_eval=None):
+    heuristic = heuristic or finder.heuristic
     openlist = []  # Actually this should be a priority queue
 
     def update_vertex(node, neighbour):
         old_g = neighbour.g
-        cmp_cost = override_cost_eval or compute_cost
+        cmp_cost = cost_eval or compute_cost
         cmp_cost(node, neighbour, finder, clearance)
         if neighbour.g < old_g:
             n_clearance = neighbour.clearance.get(finder.walkable)

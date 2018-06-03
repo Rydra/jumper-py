@@ -25,13 +25,14 @@ class Pathfinder:
             for x in range(self.grid.max_x - 1, self.grid.min_x - 1, -1):
                 node = self.grid.get_node_at(x, y)
                 if self.grid.is_walkable(x, y, self.walkable):
-                    nr = self.grid.get_node_at(node.x + 1, node.y)
-                    nrd = self.grid.get_node_at(node.x + 1, node.y + 1)
-                    nd = self.grid.get_node_at(node.x, node.y + 1)
-                    if nr and nrd and nd:
-                        m = nrd.clearance[self.walkable] or 0
-                        m = (nd.clearance[self.walkable] or 0) < m and (nd.clearance[self.walkable] or 0) or m
-                        m = (nr.clearance[self.walkable] or 0) < m and (nr.clearance[self.walkable] or 0) or m
+                    east = self.grid.get_node_at(node.x + 1, node.y)
+                    southeast = self.grid.get_node_at(node.x + 1, node.y + 1)
+                    south = self.grid.get_node_at(node.x, node.y + 1)
+
+                    if east and southeast and south:
+                        m = southeast.clearance[self.walkable] or 0
+                        m = (south.clearance[self.walkable] or 0) < m and (south.clearance[self.walkable] or 0) or m
+                        m = (east.clearance[self.walkable] or 0) < m and (east.clearance[self.walkable] or 0) or m
                         node.clearance[self.walkable] = m + 1
                     else:
                         node.clearance[self.walkable] = 1
@@ -40,7 +41,7 @@ class Pathfinder:
         self.grid.is_annotated[self.walkable] = True
         return self
 
-    def get_path(self, start_x, start_y, end_x, end_y, clearance=1):
+    def get_path(self, start_x, start_y, end_x, end_y, clearance=1, **kwargs):
         """
         Calculates a `path`. Returns the `path` from location __[startX, startY]__ to location __[endX, endY]__.
         Both locations must exist on the collision map. The starting location can be unwalkable.
@@ -55,12 +56,12 @@ class Pathfinder:
         start_node = self.grid.get_node_at(start_x, start_y)
         end_node = self.grid.get_node_at(end_x, end_y)
 
-        _end_node = self.finder(self, start_node, end_node, clearance, self.to_clear)
+        _end_node = self.finder(self, start_node, end_node, clearance, self.to_clear, **kwargs)
         if _end_node:
             return utils.trace_back_path(self, _end_node, start_node)
 
     def reset(self):
-        for _, node in self.to_clear.items():
+        for node, _ in self.to_clear.items():
             node.reset()
         self.to_clear = {}
 

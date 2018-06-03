@@ -1,25 +1,29 @@
+from functools import partial
+
 import utils
 
 
-"""
-:param[opt] bool cacheNodeAtRuntime When __true__, returns an empty `grid` instance, so that
-    later on, indexing a non-cached `node` will cause it to be created and cache within the `grid` on purpose (i.e, when needed).
-        This is a __memory-safe__ option, in case your dealing with some tight memory constraints.
-        Defaults to __false__ when omitted."""
-
 class Grid:
+    """
+    Implementation of the `grid` class.
+    The `grid` is a implicit graph which represents the 2D
+    world map layout on which the `pathfinder` object will run.
+    During a search, the `pathfinder` object needs to save some critical values. These values are cached within each `node`
+    object, and the whole set of nodes are tight inside the `grid` object itself.
+    """
+
     straight_offsets = [
-        {'x': 1, 'y': 0}, # [[W]]
-        {'x': -1,'y': 0}, # [[E]]
-        {'x': 0, 'y': 1}, # [[S]]
-        {'x': 0, 'y': -1} # [[N]]
+        (1, 0), # [[W]]
+        (-1, 0), # [[E]]
+        (0,  1), # [[S]]
+        (0, -1) # [[N]]
     ]
 
     diagonal_offsets = [
-        {'x': -1, 'y': -1}, # [[NW]],
-        {'x': 1, 'y': -1}, # [[NE]]
-        {'x': -1, 'y': 1}, # [[SW]],
-        {'x': 1, 'y': 1} # [[SE]]
+        (-1, -1), # [[NW]],
+        (1, -1), # [[NE]]
+        (-1, 1), # [[SW]],
+        (1, 1) # [[SE]]
     ]
 
     def __init__(self, map):
@@ -28,15 +32,6 @@ class Grid:
 
         :param table|string map A collision map - (2D array) with consecutive indices (starting at 0 or 1)
         or a `string` with line-break chars (<code>\n</code> or <code>\r</code>) as row delimiters.
-
-        @usage
-        -- A simple 3x3 grid
-        local myGrid = Grid:new({{0,0,0},{0,0,0},{0,0,0}})
-
-        -- A memory-safe 3x3 grid
-
-        :param map:
-        :param walkable:
         """
         self.map = map
         self.is_annotated = {}
@@ -47,6 +42,7 @@ class Grid:
     def is_walkable(self, x, y, walkable=None, clearance=None):
         if x < 0 or y < 0:
             return False
+
         try:
             node_value = self.map[y][x]
         except IndexError:
@@ -82,75 +78,44 @@ class Grid:
             return None
 
     def imap(self, f, *args, **kwargs):
+        """
+        Applies a function over all nodes of the grid. The return of the function should be a Node.
+        """
         for i, node in enumerate(self.nodes):
             self.nodes[i] = f(node, *args, **kwargs)
 
-    def get_neighbours(self, node, walkable, allow_diagonal=False, tunnel=False, clearance=False):
+    def get_neighbours(self, node, walkable, allow_diagonal=False, allow_tunneling=False, clearance=False):
         """
-          --- Returns neighbours. The returned value is an array of __walkable__ nodes neighbouring a given `node`.     @class function
-        @tparam node node a given `node`
-        @tparam[opt] string|int|func walkable the value for walkable locations in the collision map array (see @{Grid:new}).
-        Defaults to __false__ when omitted.
-        @tparam[optchain] bool allowDiagonal when __true__, allows adjacent nodes are included (8-neighbours).
-        Defaults to __false__ when omitted.
-        @tparam[optchain] bool tunnel When __true__, allows the `pathfinder` to tunnel through walls when heading diagonally.
-        @tparam[optchain] int clearance When given, will prune for the neighbours set all nodes having a clearance value lower than the passed-in value
-        Defaults to __false__ when omitted.
-        @treturn {node,...} an array of nodes neighbouring a given node
-        @usage
-        local aNode = myGrid:getNodeAt(5,6)
-        local neighbours = myGrid:getNeighbours(aNode, 0, true)
-           :param node:
-        :param walkable:
-        :param allow_diagonal:
-        :param tunnel:
-        :param clearance:
-        :return:
+        Returns neighbours. The returned value is an array of walkable nodes neighbouring a given `node`.
+
+        :param node: a given `node`
+        :param walkable: string|int|func walkable the value for walkable locations in the collision map array (see @{Grid:new}).
+        :param allow_diagonal: allowDiagonal when true, allows adjacent nodes are included (8-neighbours).
+        :param allow_tunneling: When true, allows the `pathfinder` to tunnel through walls when heading diagonally.
+        :param clearance: When given, will prune for the neighbours set all nodes having a clearance value lower than the passed-in value
+        :return: an array of nodes neighbouring a given node
         """
+        is_walkable = partial(self.is_walkable, walkable=walkable, clearance=clearance)
+
         neighbours = []
-        for straightOffset in self.straight_offsets:
-            n = self.get_node_at(node.x + straightOffset['x'], node.y + straightOffset['y'])
-            if n and self.is_walkable(n.x, n.y, walkable, clearance):
+        for offsetX, offsetY in self.straight_offsets:
+            n = self.get_node_at(node.x + offsetX, node.y + offsetY)
+            if n and is_walkable(n.x, n.y):
                 neighbours.append(n)
 
         if not allow_diagonal:
             return neighbours
 
-        for diagonal_offset in self.diagonal_offsets:
-            n = self.get_node_at(node.x + diagonal_offset['x'], node.y + diagonal_offset['y'])
-            if n and self.is_walkable(n.x, n.y, walkable, clearance):
-                if tunnel:
+        def at_least_one_adjacent_node_in_diagonal_direction_is_walkable(offsetX, offsetY):
+            n1 = self.get_node_at(node.x + offsetX, node.y)
+            n2 = self.get_node_at(node.x, node.y + offsetY)
+
+            return is_walkable(n1.x, n1.y) or is_walkable(n2.x, n2.y)
+
+        for offsetX, offsetY in self.diagonal_offsets:
+            n = self.get_node_at(node.x + offsetX, node.y + offsetY)
+            if n and is_walkable(n.x, n.y):
+                if allow_tunneling or at_least_one_adjacent_node_in_diagonal_direction_is_walkable(offsetX, offsetY):
                     neighbours.append(n)
-                else:
-                    n1 = self.get_node_at(node.x + diagonal_offset['x'], node.y)
-                    n2 = self.get_node_at(node.x, node.y + diagonal_offset['y'])
-                    if n1 and n2 and not self.is_walkable(n1.x, n1.y, walkable, clearance) and not self.is_walkable(n2.x, n2.y, walkable, clearance):
-                        pass
-                    else:
-                        neighbours.append(n)
 
         return neighbours
-
-
-class PostProcessGrid(Grid):
-    """
-    Use this when dealing with low-memory constraints, since the nodes will be
-     created on the fly as they are going to be used or accessed
-    """
-    def __init__(self, map, walkable):
-        super().__init__(map, walkable)
-        self.nodes = []
-        self.min_x, self.max_x, self.min_y, self.max_y = utils.get_array_bounds(map)
-        self.width = self.max_x - self.min_x + 1
-        self.height = self.max_y - self.min_y + 1
-
-
-class PreProcessGrid(Grid):
-    """
-    The default grid choice
-    """
-    def __init__(self, map, walkable):
-        super().__init__(map, walkable)
-        self.nodes, self.min_x, self.max_x, self.min_y, self.max_y = utils.array_to_nodes(map)
-        self.width = self.max_x - self.min_x + 1
-        self.height = self.max_y - self.min_y + 1

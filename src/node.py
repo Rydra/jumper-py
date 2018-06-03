@@ -1,13 +1,13 @@
-# The `node` represents a cell (or a tile) on a collision map. Basically, for each single cell (tile)
-# in the collision map passed-in upon initialization, a `node` object will be generated
-# and then cached within the `grid`.
-#
-# In the following implementation, nodes can be compared using the `<` operator. The comparison is
-# made with regards of their `f` cost. From a given node being examined, the `pathfinder` will expand the search
-# to the next neighbouring node having the lowest `f` cost. See `core.bheap` for more details.
-
-
 class Node:
+    """
+    The `node` represents a cell (or a tile) on a collision map. Basically, for each single cell (tile)
+    in the collision map passed-in upon initialization, a `node` object will be generated
+    and then cached within the `grid`.
+
+    In the following implementation, nodes can be compared using the `<` operator. The comparison is
+    made with regards of their `f` cost. From a given node being examined, the `pathfinder` will expand the search
+    to the next neighbouring node having the lowest `f` cost. Heaps make use of __lt__ to sort their contents.
+    """
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -43,6 +43,13 @@ class Node:
 
     def remove_clearance(self, walkable):
         self.clearance[walkable] = None
+
+    def reset(self):
+        self.g = None
+        self.h = None
+        self.opened = False
+        self.closed = False
+        self.parent = None
 
     def __lt__(self, other):
         return self.f < other.f
