@@ -3,7 +3,7 @@
 # [Nash A. & al. pseudocode](http://aigamedev.com/open/tutorials/theta-star-any-angle-paths/)
 import heapq
 import math
-from typing import Any, Optional, Dict, List
+from typing import Optional, Dict, List
 
 from heuristics import euclidean
 from interfaces import Heuristic, CostEvaluator
@@ -11,7 +11,9 @@ from node import Node
 from properties import FinderProperties
 
 
-def compute_cost(node: Node, neighbour: Node, *args: Any) -> None:
+def compute_cost(
+    node: Node, neighbour: Node, finder: FinderProperties, clearance: Optional[int]
+) -> None:
     m_cost = euclidean(
         neighbour, node
     )  # 1 if node.x == neighbour.x or node.y == neighbour.y else 1.41  # Cost of the connection

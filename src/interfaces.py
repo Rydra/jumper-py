@@ -1,4 +1,4 @@
-from typing import Protocol, Optional, Dict, Any
+from typing import Protocol, Optional, Dict
 
 from node import Node
 from properties import FinderProperties
@@ -10,7 +10,13 @@ class Heuristic(Protocol):
 
 
 class CostEvaluator(Protocol):
-    def __call__(self, node: Node, neighbour: Node, *args: Any, **kwargs: Any) -> None:
+    def __call__(
+        self,
+        node: Node,
+        neighbour: Node,
+        finder: FinderProperties,
+        clearance: Optional[int],
+    ) -> None:
         ...
 
 
@@ -22,7 +28,7 @@ class Searcher(Protocol):
         end_node: Node,
         clearance: int,
         to_clear: Dict[Node, bool],
-        heuristic: Optional[Heuristic] = None,
+        heuristic: Heuristic,
         cost_eval: Optional[CostEvaluator] = None,
     ) -> Optional[Node]:
         ...

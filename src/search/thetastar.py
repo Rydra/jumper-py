@@ -8,7 +8,7 @@ from search import astar
 
 
 def line_of_sight(
-    node: Node, neighbour: Node, finder: FinderProperties, clearance: int
+    node: Node, neighbour: Node, finder: FinderProperties, clearance: Optional[int]
 ) -> bool:
     x0, y0 = node.x, node.y
     x1, y1 = neighbour.x, neighbour.y
@@ -37,7 +37,7 @@ def line_of_sight(
 
 
 def compute_cost(
-    node: Node, neighbour: Node, finder: FinderProperties, clearance: int
+    node: Node, neighbour: Node, finder: FinderProperties, clearance: Optional[int]
 ) -> None:
     parent = node.parent or node
     mp_cost = euclidean(neighbour, parent)

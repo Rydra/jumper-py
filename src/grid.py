@@ -151,7 +151,7 @@ class Grid:
         walkable: Walkable,
         allow_diagonal: bool = False,
         allow_tunneling: bool = False,
-        clearance: bool = False,
+        clearance: Optional[int] = None,
     ) -> List[Node]:
         """
         Returns neighbours. The returned value is an array of walkable nodes neighbouring a given `node`.
