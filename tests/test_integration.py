@@ -5,6 +5,7 @@ from grid import Grid
 from heuristics import cardinal_intercardinal
 from pathfinder import Pathfinder
 from search import astar, jps, thetastar
+from mytypes.mytypes import Map
 
 
 @pytest.fixture
@@ -13,12 +14,11 @@ def all_heuristics():
         heuristics.euclidean,
         heuristics.cardinal_intercardinal,
         heuristics.diagonal,
-        heuristics.manhattan
+        heuristics.manhattan,
     ]
 
 
 class TestIntegration:
-
     def test_clearance_metrics_calculation(self):
         """See Figure 10 at http://aigamedev.com/open/tutorial/clearance-based-pathfinding/"""
         map = [
@@ -31,7 +31,7 @@ class TestIntegration:
             [0, 0, 0, 1, 1, 0, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         walkable = lambda v: v != 2
@@ -58,7 +58,7 @@ class TestIntegration:
             [4, 4, 4, 4, 4, 4, 0, 2, 1, 0],
             [3, 3, 3, 3, 3, 3, 3, 3, 2, 0],
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         ]
 
         assert output == expected_output
@@ -75,7 +75,7 @@ class TestIntegration:
             [0, 0, 0, 2, 2, 0, 2, 0, 0, 2],
             [0, 0, 0, 0, 2, 0, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         walkable = lambda v: v != 2
@@ -102,7 +102,7 @@ class TestIntegration:
             [3, 2, 1, 0, 0, 1, 0, 2, 1, 0],
             [3, 3, 2, 1, 0, 3, 3, 3, 1, 0],
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         ]
 
         assert output == expected_output
@@ -118,20 +118,22 @@ class TestIntegration:
             [0, 0, 0, 1, 1, 0, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         walkable = lambda v: v != 2
 
         grid = Grid(map)
-        finder = Pathfinder(grid, astar.search, walkable, heuristic=cardinal_intercardinal)
+        finder = Pathfinder(
+            grid, astar.search, walkable, heuristic=cardinal_intercardinal
+        )
         finder.annotate_grid()
 
         startx, starty = 0, 0
         endx, endy = 8, 8
         agent_size = 2
 
-        X = 'x'
+        X = "x"
         marked_map = [
             [X, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, X, 0, 0, 0, 0, 0, 0, 1, 0],
@@ -142,7 +144,7 @@ class TestIntegration:
             [0, 0, 0, 1, 1, X, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, X, X, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, X, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         path = finder.get_path(startx, starty, endx, endy, agent_size)
@@ -160,13 +162,15 @@ class TestIntegration:
             [0, 0, 0, 1, 1, 0, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         walkable = lambda v: v != 2
 
         grid = Grid(map)
-        finder = Pathfinder(grid, astar.search, walkable, heuristic=cardinal_intercardinal)
+        finder = Pathfinder(
+            grid, astar.search, walkable, heuristic=cardinal_intercardinal
+        )
         finder.annotate_grid()
 
         startx, starty = 0, 0
@@ -176,7 +180,11 @@ class TestIntegration:
         paths = []
 
         for heuristic in all_heuristics:
-            paths.append(finder.get_path(startx, starty, endx, endy, agent_size, heuristic=heuristic))
+            paths.append(
+                finder.get_path(
+                    startx, starty, endx, endy, agent_size, heuristic=heuristic
+                )
+            )
 
         num_nodes = len(paths[0].nodes)
         assert all(len(path.nodes) == num_nodes for path in paths)
@@ -192,13 +200,15 @@ class TestIntegration:
             [0, 0, 0, 1, 1, 0, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         walkable = lambda v: v != 2
 
         grid = Grid(map)
-        finder = Pathfinder(grid, thetastar.search, walkable, heuristic=heuristics.diagonal)
+        finder = Pathfinder(
+            grid, thetastar.search, walkable, heuristic=heuristics.diagonal
+        )
         finder.annotate_grid()
 
         startx, starty = 0, 0
@@ -207,7 +217,7 @@ class TestIntegration:
 
         path = finder.get_path(startx, starty, endx, endy, agent_size)
 
-        X = 'x'
+        X = "x"
         marked_map = [
             [X, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
@@ -218,14 +228,13 @@ class TestIntegration:
             [0, 0, 0, 1, 1, 0, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, X, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, X, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         self._assert_the_resulting_path_nodes_should_be_like(marked_map, path)
 
-
     def test_do_a_search_jps(self):
-        map = [
+        map: Map = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -235,13 +244,15 @@ class TestIntegration:
             [0, 0, 0, 1, 1, 0, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         walkable = lambda v: v != 2
 
         grid = Grid(map)
-        finder = Pathfinder(grid, jps.search, walkable, heuristic=cardinal_intercardinal)
+        finder = Pathfinder(
+            grid, jps.search, walkable, heuristic=cardinal_intercardinal
+        )
         finder.annotate_grid()
 
         startx, starty = 0, 0
@@ -250,7 +261,7 @@ class TestIntegration:
 
         path = finder.get_path(startx, starty, endx, endy, agent_size)
 
-        X = 'x'
+        X = "x"
         marked_map = [
             [X, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
@@ -261,14 +272,14 @@ class TestIntegration:
             [0, 0, 0, 1, 1, X, 2, 0, 0, 2],
             [0, 0, 0, 0, 1, 0, X, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, X, X, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         self._assert_the_resulting_path_nodes_should_be_like(marked_map, path)
 
     def _assert_the_resulting_path_nodes_should_be_like(self, marked_map, path):
         for node in path.nodes:
-            assert marked_map[node.y][node.x] == 'x'
+            assert marked_map[node.y][node.x] == "x"
 
     def test_do_a_search_smaller_corridor(self):
         map = [
@@ -281,7 +292,7 @@ class TestIntegration:
             [0, 2, 0, 1, 1, 0, 2, 0, 0, 2],
             [0, 2, 0, 0, 1, 0, 0, 0, 0, 2],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         walkable = lambda v: v != 2
@@ -296,7 +307,7 @@ class TestIntegration:
 
         path = finder.get_path(startx, starty, endx, endy, agent_size)
 
-        X = 'x'
+        X = "x"
         marked_map = [
             [X, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, X, 0, 0, 0, 0, 0, 0, 1, 0],
@@ -307,18 +318,13 @@ class TestIntegration:
             [0, 2, X, 1, 1, 0, 2, 0, 0, 2],
             [0, 2, X, 0, 1, 0, 0, 0, 0, 2],
             [X, X, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
         self._assert_the_resulting_path_nodes_should_be_like(marked_map, path)
 
     def test_do_a_search_smaller_example(self):
-        map = [
-            [0, 1, 0, 1, 0],
-            [0, 1, 0, 1, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0]
-        ]
+        map = [[0, 1, 0, 1, 0], [0, 1, 0, 1, 0], [0, 1, 1, 1, 0], [0, 0, 0, 0, 0]]
 
         walkable = 0
 
@@ -333,4 +339,4 @@ class TestIntegration:
 
         if path:
             for i, node in enumerate(path):
-                print(f'Step {i}. ({node.position})')
+                print(f"Step {i}. ({node.position})")

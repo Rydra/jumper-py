@@ -3,22 +3,35 @@
 # [Nash A. & al. pseudocode](http://aigamedev.com/open/tutorials/theta-star-any-angle-paths/)
 import heapq
 import math
+from typing import Any, Optional, Dict, List
 
 from heuristics import euclidean
+from interfaces import Heuristic, CostEvaluator
+from node import Node
+from properties import FinderProperties
 
 
-def compute_cost(node, neighbour, *args):
-    m_cost = euclidean(neighbour, node) # 1 if node.x == neighbour.x or node.y == neighbour.y else 1.41  # Cost of the connection
+def compute_cost(node: Node, neighbour: Node, *args: Any) -> None:
+    m_cost = euclidean(
+        neighbour, node
+    )  # 1 if node.x == neighbour.x or node.y == neighbour.y else 1.41  # Cost of the connection
     if node.g + m_cost < neighbour.g:
         neighbour.parent = node
         neighbour.g = node.g + m_cost
 
 
-def search(finder, start_node, end_node, clearance, to_clear, heuristic=None, cost_eval=None):
-    heuristic = heuristic or finder.heuristic
-    openlist = []  # Actually this should be a priority queue
+def search(
+    finder: FinderProperties,
+    start_node: Node,
+    end_node: Node,
+    clearance: int,
+    to_clear: Dict[Node, bool],
+    heuristic: Heuristic,
+    cost_eval: Optional[CostEvaluator] = None,
+) -> Optional[Node]:
+    openlist: List[Node] = []  # Actually this should be a priority queue
 
-    def update_vertex(node, neighbour):
+    def update_vertex(node: Node, neighbour: Node) -> None:
         old_g = neighbour.g
         cmp_cost = cost_eval or compute_cost
         cmp_cost(node, neighbour, finder, clearance)
@@ -43,7 +56,9 @@ def search(finder, start_node, end_node, clearance, to_clear, heuristic=None, co
         node.close()
         if node == end_node:
             return node
-        neighbours = finder.grid.get_neighbours(node, finder.walkable, finder.allow_diagonal, finder.tunneling)
+        neighbours = finder.grid.get_neighbours(
+            node, finder.walkable, finder.allow_diagonal, finder.tunneling
+        )
         for neighbour in neighbours:
             if not neighbour.closed:
                 to_clear[neighbour] = True

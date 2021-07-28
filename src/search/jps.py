@@ -1,10 +1,21 @@
 import heapq
+from typing import Dict, Optional, List
 
 from heuristics import euclidean
+from interfaces import Heuristic
+from node import Node
+from properties import FinderProperties
 
 
-def search(finder, start_node, end_node, clearance, to_clear):
-    openlist = []
+def search(
+    finder: FinderProperties,
+    start_node: Node,
+    end_node: Node,
+    clearance: int,
+    to_clear: Dict[Node, bool],
+    heuristic: Heuristic,
+) -> Optional[Node]:
+    openlist: List[Node] = []
 
     start_node.g = start_node.h = 0
     heapq.heappush(openlist, start_node)
@@ -16,12 +27,22 @@ def search(finder, start_node, end_node, clearance, to_clear):
         node.close()
         if node == end_node:
             return node
-        identify_successors(node, openlist, clearance, end_node, finder, to_clear)
+        identify_successors(
+            node, openlist, clearance, end_node, finder, to_clear, heuristic
+        )
 
     return None
 
 
-def identify_successors(node, openlist, clearance, end_node, finder, to_clear):
+def identify_successors(
+    node: Node,
+    openlist: List[Node],
+    clearance: int,
+    end_node: Node,
+    finder: FinderProperties,
+    to_clear: Dict[Node, bool],
+    heuristic: Heuristic,
+) -> None:
     """
     Searches for successors of a given node in the direction of each of its neighbours.
     This is a generic translation of the algorithm 1 in the paper:
@@ -49,7 +70,7 @@ def identify_successors(node, openlist, clearance, end_node, finder, to_clear):
             if not jump_node.opened or new_g < jump_node.g:
                 to_clear[jump_node] = True
                 jump_node.g = new_g
-                jump_node.h = jump_node.h or finder.heuristic(jump_node, end_node)
+                jump_node.h = jump_node.h or heuristic(jump_node, end_node)
                 jump_node.parent = node
                 if not jump_node.opened:
                     heapq.heappush(openlist, jump_node)
@@ -58,7 +79,13 @@ def identify_successors(node, openlist, clearance, end_node, finder, to_clear):
                     heapq.heapify(openlist)
 
 
-def jump(node, parent, end_node, clearance, finder):
+def jump(
+    node: Optional[Node],
+    parent: Node,
+    end_node: Node,
+    clearance: int,
+    finder: FinderProperties,
+) -> Optional[Node]:
     """
     Searches for a jump point (or a turning point) in a specific direction.
     This is a generic translation of the algorithm 2 in the paper:
@@ -71,7 +98,7 @@ def jump(node, parent, end_node, clearance, finder):
     if not node:
         return None
 
-    def is_walkable(x, y):
+    def is_walkable(x: int, y: int) -> bool:
         return finder.grid.is_walkable(x, y, finder.walkable, clearance)
 
     grid = finder.grid
@@ -87,31 +114,36 @@ def jump(node, parent, end_node, clearance, finder):
 
     if dx != 0 and dy != 0:
         # Current node is a jump point if one of his leftside/rightside neighbours ahead is forced
-        if (is_walkable(x-dx, y+dy) and not is_walkable(x-dx, y)) or \
-           (is_walkable(x+dx, y-dy) and not is_walkable(x, y-dy)):
+        if (is_walkable(x - dx, y + dy) and not is_walkable(x - dx, y)) or (
+            is_walkable(x + dx, y - dy) and not is_walkable(x, y - dy)
+        ):
             return node
 
-        if jump(grid.get_node_at(x+dx, y), node, end_node, clearance, finder):
+        if jump(grid.get_node_at(x + dx, y), node, end_node, clearance, finder):
             return node
-        if jump(grid.get_node_at(x, y+dy), node, end_node, clearance, finder):
+        if jump(grid.get_node_at(x, y + dy), node, end_node, clearance, finder):
             return node
 
     elif dx != 0:
         # Search along X-axis case
         if finder.allow_diagonal:
-            walkable_by_diagonal = (is_walkable(x + dx, y + 1) and not is_walkable(x, y + 1)) or \
-                                   (is_walkable(x + dx, y - 1) and not is_walkable(x, y - 1))
+            walkable_by_diagonal = (
+                is_walkable(x + dx, y + 1) and not is_walkable(x, y + 1)
+            ) or (is_walkable(x + dx, y - 1) and not is_walkable(x, y - 1))
             if walkable_by_diagonal:
                 return node
         else:
-            walkable_by_horizontal_sides = is_walkable(x+1, y) or is_walkable(x-1, y)
+            walkable_by_horizontal_sides = is_walkable(x + 1, y) or is_walkable(
+                x - 1, y
+            )
             if walkable_by_horizontal_sides:
                 return node
     else:
         # Search along Y-axis case
         if finder.allow_diagonal:
-            walkable_by_diagonal = (is_walkable(x + 1, y + dy) and not is_walkable(x+1, y)) or \
-                                   (is_walkable(x - 1, y + dy) and not is_walkable(x-1, y))
+            walkable_by_diagonal = (
+                is_walkable(x + 1, y + dy) and not is_walkable(x + 1, y)
+            ) or (is_walkable(x - 1, y + dy) and not is_walkable(x - 1, y))
             if walkable_by_diagonal:
                 return node
         else:
@@ -120,11 +152,15 @@ def jump(node, parent, end_node, clearance, finder):
                 return node
 
     if finder.allow_diagonal:
-        if is_walkable(x+dx, y) or is_walkable(x, y+dy):
-            return jump(grid.get_node_at(x+dx, y+dy), node, end_node, clearance, finder)
+        if is_walkable(x + dx, y) or is_walkable(x, y + dy):
+            return jump(
+                grid.get_node_at(x + dx, y + dy), node, end_node, clearance, finder
+            )
+
+    return None
 
 
-def find_neighbours(finder, node, clearance):
+def find_neighbours(finder: FinderProperties, node: Node, clearance: int) -> List[Node]:
     """
     Looks for the neighbours of a given node.
     Returns its natural neighbours plus forced neighbours when the given
@@ -136,7 +172,8 @@ def find_neighbours(finder, node, clearance):
     Otherwise, we add left and right node (perpendicular to the direction
     of move) in the neighbours list.
     """
-    def is_walkable(x, y):
+
+    def is_walkable(x: int, y: int) -> bool:
         return finder.grid.is_walkable(x, y, finder.walkable, clearance)
 
     grid = finder.grid
@@ -187,7 +224,7 @@ def find_neighbours(finder, node, clearance):
 
         else:
             # Move along the X-axis case
-            if is_walkable(x+dx, y):
+            if is_walkable(x + dx, y):
                 neighbours.append(grid.get_node_at(x + dx, y))
 
                 if not is_walkable(x, y + 1):
@@ -204,4 +241,6 @@ def find_neighbours(finder, node, clearance):
 
         return [n for n in neighbours if n]
 
-    return grid.get_neighbours(node, finder.walkable, finder.allow_diagonal, finder.tunneling, clearance)
+    return grid.get_neighbours(
+        node, finder.walkable, finder.allow_diagonal, finder.tunneling, clearance
+    )

@@ -16,10 +16,12 @@ indicating the distance between both nodes.
 """
 import math
 
+from node import Node
+
 sqrt2 = math.sqrt(2)
 
 
-def manhattan(nodeA, nodeB):
+def manhattan(nodeA: Node, nodeB: Node) -> float:
     """
     Manhattan distance.
     <br/>This heuristic is the default one being used by the `pathfinder` object.
@@ -30,7 +32,7 @@ def manhattan(nodeA, nodeB):
     return dx + dy
 
 
-def euclidean(nodeA, nodeB):
+def euclidean(nodeA: Node, nodeB: Node) -> float:
     """
     Euclidean distance.
     <br/>Evaluates as <code>distance = squareRoot(dx*dx+dy*dy)</code>
@@ -40,7 +42,7 @@ def euclidean(nodeA, nodeB):
     return math.sqrt(dx * dx + dy * dy)
 
 
-def diagonal(nodeA, nodeB):
+def diagonal(nodeA: Node, nodeB: Node) -> float:
     """
     Diagonal distance.
     <br/>Evaluates as <code>distance = max(|dx|, abs|dy|)</code>
@@ -50,7 +52,7 @@ def diagonal(nodeA, nodeB):
     return max(dx, dy)
 
 
-def cardinal_intercardinal(nodeA, nodeB):
+def cardinal_intercardinal(nodeA: Node, nodeB: Node) -> float:
     """
     Cardinal/Intercardinal distance.
     <br/>Evaluates as <code>distance = min(dx, dy)*squareRoot(2) + max(dx, dy) - min(dx, dy)</code>

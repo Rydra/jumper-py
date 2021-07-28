@@ -1,11 +1,18 @@
+from typing import Dict, Optional
+
 from heuristics import euclidean
+from interfaces import Heuristic
+from node import Node
+from properties import FinderProperties
 from search import astar
 
 
-def line_of_sight(node, neighbour, finder, clearance):
+def line_of_sight(
+    node: Node, neighbour: Node, finder: FinderProperties, clearance: int
+) -> bool:
     x0, y0 = node.x, node.y
     x1, y1 = neighbour.x, neighbour.y
-    dx, dy = abs(x1-x0), abs(y1-y0)
+    dx, dy = abs(x1 - x0), abs(y1 - y0)
     err = dx - dy
     sx = 1 if (x0 < x1) else -1
     sy = 1 if (y0 < y1) else -1
@@ -29,7 +36,9 @@ def line_of_sight(node, neighbour, finder, clearance):
     return True
 
 
-def compute_cost(node, neighbour, finder, clearance):
+def compute_cost(
+    node: Node, neighbour: Node, finder: FinderProperties, clearance: int
+) -> None:
     parent = node.parent or node
     mp_cost = euclidean(neighbour, parent)
     if line_of_sight(parent, neighbour, finder, clearance):
@@ -44,5 +53,20 @@ def compute_cost(node, neighbour, finder, clearance):
             neighbour.g = node.g + m_cost
 
 
-def search(finder, start_node, end_node, clearance, to_clear, override_heuristic=None):
-    return astar.search(finder, start_node, end_node, clearance, to_clear, override_heuristic, compute_cost)
+def search(
+    finder: FinderProperties,
+    start_node: Node,
+    end_node: Node,
+    clearance: int,
+    to_clear: Dict[Node, bool],
+    override_heuristic: Optional[Heuristic] = None,
+) -> Optional[Node]:
+    return astar.search(
+        finder,
+        start_node,
+        end_node,
+        clearance,
+        to_clear,
+        override_heuristic,
+        compute_cost,
+    )

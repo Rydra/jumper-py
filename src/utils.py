@@ -1,22 +1,10 @@
-import re
+from mytypes.mytypes import Tuple, List
 
-from node import Node
-from path import Path
-
-
-def trace_back_path(finder, node, start_node):
-    path = Path()
-    path.grid = finder.grid
-    while True:
-        if node.parent:
-            path.nodes.insert(0, node)
-            node = node.parent
-        else:
-            path.nodes.insert(0, start_node)
-            return path
+from node import Node, NodeMap
+from mytypes.mytypes import Map
 
 
-def array_to_nodes(map):
+def array_to_nodes(map: Map) -> Tuple[NodeMap, int, int, int, int]:
     min_x = 0
     min_y = 0
     max_y = height = len(map)
@@ -25,12 +13,9 @@ def array_to_nodes(map):
     nodes = [[Node(x, y) for x in range(width)] for y in range(height)]
     return nodes, min_x, max_x, min_y, max_y
 
-def get_array_bounds(map):
-    pass
 
-
-def string_map_to_array(string):
-    array_map = []
+def string_map_to_array(string: str) -> List[List[str]]:
+    array_map: List[List[str]] = []
     for line in string.splitlines():
         stripped_line = line.strip()
         if stripped_line:
