@@ -3,3 +3,5 @@
 tests/\.pytest_cache/
 
 *.pyc
+
+dist/
