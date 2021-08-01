@@ -59,7 +59,7 @@ def search(
     end_node: Node,
     clearance: int,
     to_clear: Dict[Node, bool],
-    override_heuristic: Optional[Heuristic] = None,
+    heuristic: Optional[Heuristic] = None,
 ) -> Optional[Node]:
     return astar.search(
         finder,
@@ -67,6 +67,6 @@ def search(
         end_node,
         clearance,
         to_clear,
-        override_heuristic,
+        heuristic,
         compute_cost,
     )

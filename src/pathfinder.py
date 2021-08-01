@@ -1,10 +1,10 @@
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
 
 import path
 from grid import Grid
 from heuristics import manhattan
-from interfaces import Searcher
-from mytypes.mytypes import Map
+from interfaces import Heuristic, Searcher
+from mytypes.mytypes import Map, Position
 from mytypes.walkable import Walkable
 from node import Node
 from path import Path
@@ -19,21 +19,15 @@ class Pathfinder:
         self.finder = finder or astar.search
         self.walkable = walkable  # can be a string, a number or a function
         self.tunneling = kwargs.get("tunneling", False)
-        self.heuristic = kwargs.get("heuristic") or manhattan
         self.allow_diagonal = True
         self.to_clear: Dict[Node, bool] = {}
 
-    def annotate_grid(self) -> "Pathfinder":
-        self.grid.annotate(self.walkable)
-        return self
-
     def get_path(
         self,
-        start_x: int,
-        start_y: int,
-        end_x: int,
-        end_y: int,
+        start_position: Position,
+        end_position: Position,
         clearance: int = 1,
+        heuristic: Optional[Heuristic] = None,
         **kwargs: Any
     ) -> Optional[Path]:
         """
@@ -47,8 +41,8 @@ class Pathfinder:
         :return path: a path (array of nodes) when found, otherwise None
         """
         self.reset()
-        start_node = self.grid.get_node_at(start_x, start_y)
-        end_node = self.grid.get_node_at(end_x, end_y)
+        start_node = self.grid.get_node_at(start_position[0], start_position[1])
+        end_node = self.grid.get_node_at(end_position[0], end_position[1])
 
         _end_node = self.finder(
             self,
@@ -56,7 +50,7 @@ class Pathfinder:
             end_node,
             clearance,
             self.to_clear,
-            heuristic=self.heuristic,
+            heuristic=heuristic or manhattan,
             **kwargs
         )
         if _end_node:

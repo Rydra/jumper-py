@@ -1,10 +1,10 @@
 from functools import partial
-from typing import Dict, Optional, List, Any, Protocol
+from typing import Any, Dict, List, Optional, Protocol
 
 import utils
-from node import Node
 from mytypes.mytypes import Map
 from mytypes.walkable import Walkable
+from node import Node
 
 
 class NodeMapper(Protocol):
@@ -65,7 +65,7 @@ class Grid:
         for y in range(self.max_y - 1, self.min_y - 1, -1):
             for x in range(self.max_x - 1, self.min_x - 1, -1):
                 node = self.get_node_at(x, y)
-                assert node
+                assert node is not None
                 if self.is_walkable(x, y, walkable):
                     east = self.get_node_at(node.x + 1, node.y)
                     southeast = self.get_node_at(node.x + 1, node.y + 1)
@@ -116,12 +116,12 @@ class Grid:
                 return False
 
             node = self.get_node_at(x, y)
-            assert node
+            assert node is not None
 
             # In this context, a walkable is representing the entity
             # that is trying to get clearance through the node
             node_clearance = node.get_clearance(walkable)
-            assert node_clearance
+            assert node_clearance is not None
             has_enough_clearance = node_clearance >= clearance
 
         try:

@@ -3,9 +3,9 @@ import pytest
 import heuristics
 from grid import Grid
 from heuristics import cardinal_intercardinal
+from mytypes.mytypes import Map
 from pathfinder import Pathfinder
 from search import astar, jps, thetastar
-from mytypes.mytypes import Map
 
 
 @pytest.fixture
@@ -123,15 +123,16 @@ class TestIntegration:
 
         walkable = lambda v: v != 2
 
-        grid = Grid(map)
+        grid = Grid(map).annotate(walkable)
         finder = Pathfinder(
-            grid, astar.search, walkable, heuristic=cardinal_intercardinal
+            grid,
+            astar.search,
+            walkable,
         )
-        finder.annotate_grid()
 
-        startx, starty = 0, 0
-        endx, endy = 8, 8
-        agent_size = 2
+        path = finder.get_path(
+            (0, 0), (8, 8), clearance=2, heuristic=cardinal_intercardinal
+        )
 
         X = "x"
         marked_map = [
@@ -146,8 +147,6 @@ class TestIntegration:
             [0, 0, 0, 0, 0, 0, 0, 0, X, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
-
-        path = finder.get_path(startx, starty, endx, endy, agent_size)
 
         self._assert_the_resulting_path_nodes_should_be_like(marked_map, path)
 

@@ -5,3 +5,6 @@ Jumper is a pathfinding library designed for grid-based games. It aims to be fas
 The original idea of jumper-py was to assess whether the readability of python is better or not than the readability of Lua (still trying to assess and forge an opinion on the matter). No benchmarking has been done yet.
 
 
+## Usage
+
+
