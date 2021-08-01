@@ -37,6 +37,7 @@ class TestIntegration:
         walkable = lambda v: v != 2
 
         grid = Grid(map)
+        grid.annotate(walkable)
         finder = Pathfinder(grid, astar.search, walkable)
         finder.annotate_grid()
 
@@ -121,7 +122,42 @@ class TestIntegration:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
+        # Make it walkable only if
         walkable = lambda v: v != 2
+
+        grid = Grid(map).annotate(walkable)
+        finder = Pathfinder(
+            grid,
+            astar.search,
+            walkable,
+        )
+
+        path = finder.get_path(
+            (0, 0), (8, 8), clearance=2, heuristic=cardinal_intercardinal
+        )
+
+        X = "x"
+        marked_map = [
+            [X, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, X, 0, 0, 0, 0, 0, 0, 1, 0],
+            [0, 0, X, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, X, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, X, 0, 0, 0, 2, 0],
+            [0, 0, 1, 1, X, 0, 0, 2, 0, 0],
+            [0, 0, 0, 1, 1, X, 2, 0, 0, 2],
+            [0, 0, 0, 0, 1, 0, X, X, 0, 2],
+            [0, 0, 0, 0, 0, 0, 0, 0, X, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+
+        self._assert_the_resulting_path_nodes_should_be_like(marked_map, path)
+
+    def test_astar_large_map(self, datadir):
+        # Make it walkable only if
+        walkable = lambda v: v != 2
+
+        map = (datadir / "large_map_hard.map").read_text()
+        map = map.replace("@", "2").replace("T", "1").replace(".", "0")
 
         grid = Grid(map).annotate(walkable)
         finder = Pathfinder(
