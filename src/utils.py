@@ -1,7 +1,5 @@
-from mytypes.mytypes import Tuple, List
-
+from mytypes.mytypes import List, Map, Tuple
 from node import Node, NodeMap
-from mytypes.mytypes import Map
 
 
 def array_to_nodes(map: Map) -> Tuple[NodeMap, int, int, int, int]:

@@ -3,10 +3,10 @@
 # [Nash A. & al. pseudocode](http://aigamedev.com/open/tutorials/theta-star-any-angle-paths/)
 import heapq
 import math
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 
 from heuristics import euclidean
-from interfaces import Heuristic, CostEvaluator
+from interfaces import CostEvaluator, Heuristic
 from node import Node
 from properties import FinderProperties
 

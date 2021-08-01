@@ -1,4 +1,4 @@
-from utils import string_map_to_array, array_to_nodes
+from utils import array_to_nodes, string_map_to_array
 
 
 def test_convert_a_string_map_into_a_map_array():

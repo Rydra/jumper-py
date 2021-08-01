@@ -3,12 +3,11 @@
 import cProfile
 import os
 from contextlib import contextmanager
+from pathlib import Path
+from time import perf_counter, process_time
 
 import yappi
 from pyinstrument import Profiler
-
-from pathlib import Path
-from time import perf_counter, process_time
 
 
 @contextmanager

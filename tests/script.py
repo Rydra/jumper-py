@@ -1,17 +1,16 @@
 # type: ignore
 
+# Asyncio version
+import asyncio as aio
 import threading
 from concurrent.futures.thread import ThreadPoolExecutor
-from functools import wraps, partial
+from functools import partial, wraps
 
 from grid import Grid
 from heuristics import cardinal_intercardinal
 from pathfinder import Pathfinder
 from profiling.decorators import timewith
 from search import astar
-
-# Asyncio version
-import asyncio as aio
 
 
 def get_path(path_to_do):

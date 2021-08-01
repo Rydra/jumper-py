@@ -1,4 +1,4 @@
-from typing import Protocol, Optional, Dict
+from typing import Dict, Optional, Protocol
 
 from node import Node
 from properties import FinderProperties

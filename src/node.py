@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 from mytypes.mytypes import Position
 from mytypes.walkable import Walkable

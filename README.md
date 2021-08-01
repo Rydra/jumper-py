@@ -1,3 +1,5 @@
+[![Upload Python Package](https://github.com/Rydra/jumper-py/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Rydra/jumper-py/actions/workflows/python-publish.yml)
+
 A python port of [Jumper](https://github.com/Yonaba/Jumper), a pathfinding library originally developed by [Yonaba](https://github.com/Yonaba).
 
 Jumper is a pathfinding library designed for grid-based games. It aims to be fast and lightweight. It features a wide range of search algorithms, built within a clean interface with chaining features which makes it very friendly and easy to use.

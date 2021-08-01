@@ -1,5 +1,5 @@
 import heapq
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 from heuristics import euclidean
 from interfaces import Heuristic

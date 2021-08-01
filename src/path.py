@@ -1,4 +1,4 @@
-from typing import List, Optional, Iterable
+from typing import Iterable, List, Optional
 
 from grid import Grid
 from heuristics import euclidean
