@@ -1,6 +1,6 @@
 [![Upload Python Package](https://github.com/Rydra/jumper-py/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Rydra/jumper-py/actions/workflows/python-publish.yml)
 
-![jumper logo](./docs/jumper logo.png)
+![jumper logo](./docs/jumper_logo.png)
 
 A python port of [Jumper](https://github.com/Yonaba/Jumper), a pathfinding library originally developed by [Yonaba](https://github.com/Yonaba).
 
