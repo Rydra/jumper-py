@@ -76,7 +76,7 @@ def run_async():
 
     # Multithreaded version. It should take almost the same as the previous one (or more due to overhead of threads)
     # since computing the path is a purely CPU bound operation.
-    # Node: The finder IS NOT threadsafe
+    # Node: The options IS NOT threadsafe
     class PathFinderLocal(threading.local):
         def __init__(self):
             print("Initializing local")
@@ -105,11 +105,11 @@ def run_async():
     # Multiprocessing version. This one should actually be more performant
     # with timewith():
     #     grid = Grid(map)
-    #     finder = Pathfinder(grid, astar.search, walkable, heuristic=cardinal_intercardinal)
-    #     finder.annotate_grid()
+    #     options = Pathfinder(grid, astar.search, walkable, heuristic=cardinal_intercardinal)
+    #     options.annotate_grid()
     #
     #     with ProcessPoolExecutor(max_workers=2) as executor:
-    #         computed_paths = executor.map(get_path, [(p, finder, agent_size) for p in paths[:2]])
+    #         computed_paths = executor.map(get_path, [(p, options, agent_size) for p in paths[:2]])
 
     # assert len(list(computed_paths)) == len(paths)
 

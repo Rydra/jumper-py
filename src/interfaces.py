@@ -1,7 +1,8 @@
 from typing import Dict, Optional, Protocol
 
+from grid import Grid
 from node import Node
-from properties import FinderProperties
+from properties import AgentCharacteristics, SearchOptions
 
 
 class Heuristic(Protocol):
@@ -14,8 +15,8 @@ class CostEvaluator(Protocol):
         self,
         node: Node,
         neighbour: Node,
-        finder: FinderProperties,
-        clearance: Optional[int],
+        grid: Grid,
+        agent_characteristics: Optional[AgentCharacteristics],
     ) -> None:
         ...
 
@@ -23,10 +24,11 @@ class CostEvaluator(Protocol):
 class Searcher(Protocol):
     def __call__(
         self,
-        finder: FinderProperties,
+        grid: Grid,
+        finder: SearchOptions,
         start_node: Node,
         end_node: Node,
-        clearance: int,
+        agent_characteristics: AgentCharacteristics,
         to_clear: Dict[Node, bool],
         heuristic: Heuristic,
         cost_eval: Optional[CostEvaluator] = None,

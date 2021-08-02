@@ -72,16 +72,10 @@ class Grid:
                     south = self.get_node_at(node.x, node.y + 1)
 
                     if east and southeast and south:
-                        m = southeast.clearance[walkable] or 0
-                        m = (
-                            (south.clearance[walkable] or 0) < m
-                            and (south.clearance[walkable] or 0)
-                            or m
-                        )
-                        m = (
-                            (east.clearance[walkable] or 0) < m
-                            and (east.clearance[walkable] or 0)
-                            or m
+                        m = min(
+                            southeast.clearance.get(walkable, 0),
+                            south.clearance.get(walkable, 0),
+                            east.clearance.get(walkable, 0),
                         )
                         node.clearance[walkable] = m + 1
                     else:
@@ -90,6 +84,18 @@ class Grid:
                     node.clearance[walkable] = 0
         self.is_annotated[walkable] = True
         return self
+
+    def get_clearance_grid(self, walkable: Walkable) -> Map:
+        output = []
+        for y in range(self.height):
+            row = []
+            for x in range(self.width):
+                node = self.get_node_at(x, y)
+                assert node is not None
+                row.append(node.get_clearance(walkable))
+            output.append(row)
+
+        return output
 
     def is_walkable(
         self,

@@ -1,17 +1,19 @@
 import heapq
 from typing import Dict, List, Optional
 
+from grid import Grid
 from heuristics import euclidean
 from interfaces import Heuristic
 from node import Node
-from properties import FinderProperties
+from properties import AgentCharacteristics, SearchOptions
 
 
 def search(
-    finder: FinderProperties,
+    grid: Grid,
+    options: SearchOptions,
     start_node: Node,
     end_node: Node,
-    clearance: int,
+    agent_characteristics: AgentCharacteristics,
     to_clear: Dict[Node, bool],
     heuristic: Heuristic,
 ) -> Optional[Node]:
@@ -28,7 +30,14 @@ def search(
         if node == end_node:
             return node
         identify_successors(
-            node, openlist, clearance, end_node, finder, to_clear, heuristic
+            node,
+            openlist,
+            agent_characteristics,
+            end_node,
+            grid,
+            options,
+            to_clear,
+            heuristic,
         )
 
     return None
@@ -37,9 +46,10 @@ def search(
 def identify_successors(
     node: Node,
     openlist: List[Node],
-    clearance: int,
+    agent_characteristics: AgentCharacteristics,
     end_node: Node,
-    finder: FinderProperties,
+    grid: Grid,
+    options: SearchOptions,
     to_clear: Dict[Node, bool],
     heuristic: Heuristic,
 ) -> None:
@@ -52,13 +62,15 @@ def identify_successors(
     In case a jump point was found, and this node happened to be diagonal to the
     node currently expanded in a straight mode search, we skip this jump point.
     """
-    neighbours = find_neighbours(finder, node, clearance)
+    neighbours = find_neighbours(grid, options, node, agent_characteristics)
     neighbours.reverse()
     for neighbour in neighbours:
         skip = False
-        jump_node = jump(neighbour, node, end_node, clearance, finder)
+        jump_node = jump(
+            grid, neighbour, node, end_node, agent_characteristics, options
+        )
 
-        if jump_node and not finder.allow_diagonal:
+        if jump_node and not options.allow_diagonal:
             if jump_node.x != node.x and jump_node.y != node.y:
                 skip = True
 
@@ -80,11 +92,12 @@ def identify_successors(
 
 
 def jump(
+    grid: Grid,
     node: Optional[Node],
     parent: Node,
     end_node: Node,
-    clearance: int,
-    finder: FinderProperties,
+    agent_characteristics: AgentCharacteristics,
+    options: SearchOptions,
 ) -> Optional[Node]:
     """
     Searches for a jump point (or a turning point) in a specific direction.
@@ -99,9 +112,9 @@ def jump(
         return None
 
     def is_walkable(x: int, y: int) -> bool:
-        return finder.grid.is_walkable(x, y, finder.walkable, clearance)
-
-    grid = finder.grid
+        return grid.is_walkable(
+            x, y, agent_characteristics.walkable, agent_characteristics.clearance
+        )
 
     x, y = node.x, node.y
     if not is_walkable(x, y):
@@ -119,14 +132,28 @@ def jump(
         ):
             return node
 
-        if jump(grid.get_node_at(x + dx, y), node, end_node, clearance, finder):
+        if jump(
+            grid,
+            grid.get_node_at(x + dx, y),
+            node,
+            end_node,
+            agent_characteristics,
+            options,
+        ):
             return node
-        if jump(grid.get_node_at(x, y + dy), node, end_node, clearance, finder):
+        if jump(
+            grid,
+            grid.get_node_at(x, y + dy),
+            node,
+            end_node,
+            agent_characteristics,
+            options,
+        ):
             return node
 
     elif dx != 0:
         # Search along X-axis case
-        if finder.allow_diagonal:
+        if options.allow_diagonal:
             walkable_by_diagonal = (
                 is_walkable(x + dx, y + 1) and not is_walkable(x, y + 1)
             ) or (is_walkable(x + dx, y - 1) and not is_walkable(x, y - 1))
@@ -140,7 +167,7 @@ def jump(
                 return node
     else:
         # Search along Y-axis case
-        if finder.allow_diagonal:
+        if options.allow_diagonal:
             walkable_by_diagonal = (
                 is_walkable(x + 1, y + dy) and not is_walkable(x + 1, y)
             ) or (is_walkable(x - 1, y + dy) and not is_walkable(x - 1, y))
@@ -151,16 +178,26 @@ def jump(
             if walkable_by_vertical_sides:
                 return node
 
-    if finder.allow_diagonal:
+    if options.allow_diagonal:
         if is_walkable(x + dx, y) or is_walkable(x, y + dy):
             return jump(
-                grid.get_node_at(x + dx, y + dy), node, end_node, clearance, finder
+                grid,
+                grid.get_node_at(x + dx, y + dy),
+                node,
+                end_node,
+                agent_characteristics,
+                options,
             )
 
     return None
 
 
-def find_neighbours(finder: FinderProperties, node: Node, clearance: int) -> List[Node]:
+def find_neighbours(
+    grid: Grid,
+    options: SearchOptions,
+    node: Node,
+    agent_characteristics: AgentCharacteristics,
+) -> List[Node]:
     """
     Looks for the neighbours of a given node.
     Returns its natural neighbours plus forced neighbours when the given
@@ -174,9 +211,9 @@ def find_neighbours(finder: FinderProperties, node: Node, clearance: int) -> Lis
     """
 
     def is_walkable(x: int, y: int) -> bool:
-        return finder.grid.is_walkable(x, y, finder.walkable, clearance)
-
-    grid = finder.grid
+        return grid.is_walkable(
+            x, y, agent_characteristics.walkable, agent_characteristics.clearance
+        )
 
     if node.parent:
         # Node has a parent, we will prune some neighbours
@@ -216,7 +253,7 @@ def find_neighbours(finder: FinderProperties, node: Node, clearance: int) -> Lis
                     neighbours.append(grid.get_node_at(x - 1, y + dy))
 
             # In case diagonal moves are forbidden, it needs to be optimized
-            if not finder.allow_diagonal:
+            if not options.allow_diagonal:
                 if is_walkable(x + 1, y):
                     neighbours.append(grid.get_node_at(x + 1, y))
                 if is_walkable(x - 1, y):
@@ -233,7 +270,7 @@ def find_neighbours(finder: FinderProperties, node: Node, clearance: int) -> Lis
                     neighbours.append(grid.get_node_at(x + dx, y - 1))
 
             # In case diagonal moves are forbidden, it needs to be optimized
-            if not finder.allow_diagonal:
+            if not options.allow_diagonal:
                 if is_walkable(x, y + 1):
                     neighbours.append(grid.get_node_at(x, y + 1))
                 if is_walkable(x, y - 1):
@@ -242,5 +279,9 @@ def find_neighbours(finder: FinderProperties, node: Node, clearance: int) -> Lis
         return [n for n in neighbours if n]
 
     return grid.get_neighbours(
-        node, finder.walkable, finder.allow_diagonal, finder.tunneling, clearance
+        node,
+        agent_characteristics.walkable,
+        options.allow_diagonal,
+        options.tunneling,
+        agent_characteristics.clearance,
     )

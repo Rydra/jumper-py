@@ -1,14 +1,15 @@
 from typing import Dict, Optional
 
+from grid import Grid
 from heuristics import euclidean
 from interfaces import Heuristic
 from node import Node
-from properties import FinderProperties
+from properties import AgentCharacteristics, SearchOptions
 from search import astar
 
 
 def line_of_sight(
-    node: Node, neighbour: Node, finder: FinderProperties, clearance: Optional[int]
+    node: Node, neighbour: Node, grid: Grid, agent_characteristics: AgentCharacteristics
 ) -> bool:
     x0, y0 = node.x, node.y
     x1, y1 = neighbour.x, neighbour.y
@@ -18,7 +19,9 @@ def line_of_sight(
     sy = 1 if (y0 < y1) else -1
 
     while True:
-        if not finder.grid.is_walkable(x0, y0, finder.walkable, clearance):
+        if not grid.is_walkable(
+            x0, y0, agent_characteristics.walkable, agent_characteristics.clearance
+        ):
             return False
 
         if x0 == x1 and y0 == y1:
@@ -37,11 +40,11 @@ def line_of_sight(
 
 
 def compute_cost(
-    node: Node, neighbour: Node, finder: FinderProperties, clearance: Optional[int]
+    node: Node, neighbour: Node, grid: Grid, agent_characteristics: AgentCharacteristics
 ) -> None:
     parent = node.parent or node
     mp_cost = euclidean(neighbour, parent)
-    if line_of_sight(parent, neighbour, finder, clearance):
+    if line_of_sight(parent, neighbour, grid, agent_characteristics):
         if parent.g + mp_cost < neighbour.g:
             neighbour.parent = parent
             neighbour.g = parent.g + mp_cost
@@ -54,18 +57,20 @@ def compute_cost(
 
 
 def search(
-    finder: FinderProperties,
+    grid: Grid,
+    options: SearchOptions,
     start_node: Node,
     end_node: Node,
-    clearance: int,
+    agent_characteristics: AgentCharacteristics,
     to_clear: Dict[Node, bool],
     heuristic: Optional[Heuristic] = None,
 ) -> Optional[Node]:
     return astar.search(
-        finder,
+        grid,
+        options,
         start_node,
         end_node,
-        clearance,
+        agent_characteristics,
         to_clear,
         heuristic,
         compute_cost,
