@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jumper-py"
-version = "0.2.2"
+version = "1.0.0"
 description = ""
 authors = ["David <davigetto@gmail.com>"]
 packages = [
@@ -23,7 +23,7 @@ pyhamcrest = "^2.0.2"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.2.2"
+version = "1.0.0"
 tag_format = "$version"
 version_files = [
     "src/__version__.py",
